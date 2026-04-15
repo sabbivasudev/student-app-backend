@@ -3,7 +3,11 @@ const cors = require("cors");
 const axios = require("axios");
 
 const app = express();
-app.use(cors());
+
+// ✅ FIX 1: Better CORS (important for mobile + deployment)
+app.use(cors({
+  origin: "*"
+}));
 
 const PORT = 5000;
 
@@ -120,13 +124,13 @@ app.get("/attendance", async (req, res) => {
 
 
 // =========================
-// 🎓 ACADEMICS (MAIN FIX)
+// 🎓 ACADEMICS
 // =========================
 app.get("/academics", async (req, res) => {
   try {
     const { className, section } = req.query;
 
-    const sheetName = `${className} ${section}`; // Example: "10 C"
+    const sheetName = `${className} ${section}`;
     const url = `https://opensheet.elk.sh/${ACADEMICS_SHEET_ID}/${encodeURIComponent(sheetName)}`;
 
     console.log("Fetching Academics:", url);
@@ -134,7 +138,6 @@ app.get("/academics", async (req, res) => {
     const response = await axios.get(url);
     const data = Array.isArray(response.data) ? response.data : [];
 
-    // ✅ CLEAN DATA (IMPORTANT)
     const cleaned = data.map(row => ({
       "Exam Type": row["Exam Type"]?.trim(),
       "Student ID": row["Student ID"]?.trim(),
@@ -171,7 +174,6 @@ app.get("/teachers", async (req, res) => {
     const response = await axios.get(url);
     const data = Array.isArray(response.data) ? response.data : [];
 
-    // ✅ UNIQUE SUBJECT + TEACHER
     const teachersMap = {};
 
     data.forEach(row => {
@@ -194,7 +196,7 @@ app.get("/teachers", async (req, res) => {
 
 
 // =========================
-// 👨‍🎓 STUDENTS (WITH AVG)
+// 👨‍🎓 STUDENTS
 // =========================
 app.get("/students", async (req, res) => {
   try {
@@ -246,8 +248,8 @@ app.get("/students", async (req, res) => {
 
 
 // =========================
-// 🚀 START SERVER
+// 🚀 START SERVER (FIXED)
 // =========================
-app.listen(PORT, () => {
-  console.log(`✅ Server running on http://localhost:${PORT}`);
+app.listen(process.env.PORT || 5000, "0.0.0.0", () => {
+  console.log("✅ Server running");
 });
